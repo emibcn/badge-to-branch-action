@@ -1,6 +1,6 @@
 name: 'Badge Action - Save to dedicated branch'
 author: 'emibcn'
-description: 'Create a SVG badge using GitHub Actions and GitHub Workflow CPU time (no 3rd parties servers) and save image to a dedicated branch'
+description: 'Create a SVG badge using GitHub Actions and GitHub Workflow CPU time and save image to a dedicated branch'
 branding:
   icon: award
   color: blue
