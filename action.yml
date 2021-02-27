@@ -69,8 +69,8 @@ runs:
       shell: bash
       env:
         CURRENT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
-    - name: Generate the badge SVG image
-      uses: emibcn/badge-action@v1
+    - uses: emibcn/badge-action@v1
+      name: Generate the badge SVG image
       id: badge
       with:
         label: ${INPUT_LABEL}
@@ -88,8 +88,8 @@ runs:
       shell: bash
       env:
         CURRENT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
-    - name: Push badge commit
-      uses: ad-m/github-push-action@master
+    - uses: ad-m/github-push-action@master
+      name: Push badge commit
       with:
         github_token: ${INPUT_GITHUB_TOKEN}
         branch: ${INPUT_BRANCH}
