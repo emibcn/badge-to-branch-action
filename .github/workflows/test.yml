@@ -1,0 +1,33 @@
+on:
+  push:
+    branches:
+    - '*'
+    - '!badges'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: A job to test this action
+    steps:
+
+    - name: Prepare environment
+      id: coverage
+      run: |
+        # Generates a GitHub Workflow output named `lines` with a coverage value
+        echo "##[set-output name=lines;]${COVERAGE}"
+
+        # Output values to be used by other steps
+        echo "##[set-output name=filename;]${FILENAME}"
+      env:
+        COVERAGE: 53.5%
+        FILENAME: test-badge.svg
+
+    # Use the output from the `coverage` step
+    - name: Generate the badge SVG image and push to dedicated branch
+      uses: emibcn/badge-to-branch-action@v1
+      id: badge
+      with:
+        label: 'Test coverage'
+        status: ${{ steps.coverage.outputs.lines }}
+        color: 'blue,555,daf'
+        filename: ${{ steps.coverage.outputs.filename }}

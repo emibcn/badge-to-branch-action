@@ -1,0 +1,96 @@
+name: 'Badge Action - Save to dedicated branch'
+author: 'emibcn'
+description: 'Create a SVG badge using GitHub Actions and GitHub Workflow CPU time (no 3rd parties servers) and save image to a dedicated branch'
+branding:
+  icon: award
+  color: blue
+inputs:
+  label:
+    description: 'The left label of the badge, usually static.'
+    required: true
+  label-color:
+    description: 'Hex or named color for the label'
+    required: true
+    default: '555'
+  status:
+    description: 'The right status as the badge, usually based on results.'
+    required: true
+  color:
+    description: 'An array (comma separated) with hex or named colors of the badge value background. More than one creates gradient background.'
+    required: true
+    default: 'blue'
+  style:
+    description: 'Badge style: flat or classic'
+    required: true
+    default: 'classic'
+  icon:
+    description: 'Use icon'
+    required: false
+  icon-width:
+    description: 'Set this if icon is not square'
+    required: false
+    default: 13
+  scale:
+    description: 'Set badge scale'
+    required: true
+    default: 1
+  filename:
+    description: 'File name for the generated SVG image (for example: `test-coverage.svg`)'
+    required: true
+  path:
+    description: 'The path to store the badges branch while creating and commiting. Defaults to `badges`.'
+    required: true
+    default: 'badges'
+  branch:
+    description: 'Branch to store the badges images. Defaults to `badges`.'
+    required: true
+    default: 'badges'
+  github_token:
+    description: 'The `GITHUB_TOKEN` used to push the commit with the generated badge. Use `${{ secrets.GITHUB_TOKEN }}`'
+    required: true
+outputs:
+  badge:
+    description: 'The badge SVG contents'
+    value: ${{ steps.badge.outputs.badge }}
+  public_url:
+    description: 'The public URL for the generated badge'
+    value: ${{ steps.commmit.outputs.url }}
+runs:
+  using: "composite"
+  steps:
+    - name: Extract branch name
+      run: ${GITHUB_ACTION_PATH}/get-branch-name.sh
+      id: extract_branch
+      shell: bash
+      env:
+        TMP_PULL_HEAD_REF: ${{ github.head_ref }}
+    - name: Checkout dedicated branch on specified path. Initialize dedicated branch if needed.
+      run: ${GITHUB_ACTION_PATH}/init-and-checkout.sh
+      shell: bash
+      env:
+        CURRENT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
+    - name: Generate the badge SVG image
+      uses: emibcn/badge-action@v1
+      id: badge
+      with:
+        label: ${INPUT_LABEL}
+        status: ${INPUT_STATUS}
+        color: ${INPUT_COLOR}
+        path: ${INPUT_PATH}/${{ steps.extract_branch.outputs.branch }}/${INPUT_FILENAME}
+        label-color: ${INPUT_LABEL_COLOR}
+        style: ${INPUT_STYLE}
+        icon: ${INPUT_ICON}
+        icon-width: ${INPUT_ICON_WIDTH}
+        scale: ${INPUT_SCALE}
+    - name: Commit badge
+      run: ${GITHUB_ACTION_PATH}/commit-badge.sh
+      id: commit
+      shell: bash
+      env:
+        CURRENT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
+    - name: Push badge commit
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${INPUT_GITHUB_TOKEN}
+        branch: ${INPUT_BRANCH}
+        directory: ${INPUT_PATH}
